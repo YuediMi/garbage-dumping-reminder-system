@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Trash Bin Status</title>
+    <script src="echarts.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="trashbin.css">
+</head>
+<body>
+    <h1>Trash Can1</h1>
+    <form class="bin1" id="1">
+        <div id="trashiaq1" style="width: 600px;height:400px;"></div>
+        <div class="icon">
+            <div class="lid"></div>
+            <div class="lidcap"></div>
+            <div class="bin">
+                <!-- <strong class="bar" id="bar1">20%</strong> -->
+                <!-- <strong class="bar" style='height:30%;'>30%</strong> -->
+            </div>
+            <!-- <div class="loadbar">
+                <strong class="bar" id="bar1" style='height:0%;'>0%</strong>
+            </div> -->
+            <strong class="bar" id="bar1">20%</strong>
+        </div>
+        <!-- <div class="loadbar">
+            <strong class="bar" id="bar1" style='height:0%;'>0%</strong>
+        </div> -->
+        <div class="lamp" id="lamp1" style="background-color: green;"></div>
+        &nbsp&nbsp
+        <div id="statusinfo1">No need to clean</div>
+    </form>
+<hr>
+    <h1>Trash Can2</h1>
+    <form class="bin2" id="2">
+        <div id="trashiaq2" style="width: 600px;height:400px;"></div>
+        <div class="icon">
+            <div class="lid"></div>
+            <div class="lidcap"></div>
+            <div class="bin">
+                <!-- <strong class="bar" id="bar2">0%</strong> -->
+            </div>
+            
+            <!-- <div class="loadbar">
+                <strong class="bar" id="bar2" style='height:0%;'>0%</strong>
+            </div> -->
+            <strong class="bar" id="bar2">0%</strong>
+        </div>
+        <!-- <div class="loadbar">
+            <strong class="bar" id="bar2" style='height:0%;'>0%</strong>
+        </div> -->
+        <div class="lamp" id="lamp2" style="background-color: green;"></div>
+        &nbsp&nbsp
+        <div id="statusinfo2">No need to clean</div>
+    </form>
+<hr>
+    <h1>Trash Can3</h1>
+    <form class="bin3" id="3">
+        <div id="trashiaq3" style="width: 600px;height:400px;"></div>
+        <div class="icon">
+            <div class="lid"></div>
+            <div class="lidcap"></div>
+            <div class="bin">
+                <!-- <strong class="bar" id="bar3" >90%</strong> -->
+            </div>
+            <!-- <div class="loadbar">
+                <strong class="bar" id="bar3" style='height:0%;'>0%</strong>
+            </div> -->
+            <strong class="bar" id="bar3">30%</strong>
+        </div>
+        <!-- <div class="loadbar">
+            <strong class="bar" id="bar3" style='height:0%;'>0%</strong>
+        </div> -->
+        <div class="lamp" id="lamp3" style="background-color: green;"></div>
+        &nbsp&nbsp
+        <div id="statusinfo3">No need to clean</div>
+    </form>
+<hr>
+    <h1>Trash Can4</h1>
+    <form class="bin4" id="4">
+        <div id="trashiaq4" style="width: 600px;height:400px;"></div>
+        <div class="icon">
+            <div class="lid"></div>
+            <div class="lidcap"></div>
+            <div class="bin">
+                <!-- <strong class="bar" id="bar4">60%</strong> -->
+            </div>
+            <strong class="bar" id="bar4">30%</strong>
+        </div>
+        <!-- <div class="loadbar">
+            <strong class="bar" id="bar4" style='height:0%;'>0%</strong>
+        </div> -->
+        <div class="lamp" id="lamp4" style="background-color: green;"></div>
+        &nbsp&nbsp
+        <div id="statusinfo4">No need to clean</div>
+    </form>
+
+
+    <script type="text/javascript">
+
+        function showiaqchart(id){
+            var status = document.getElementById("lamp"+id);
+            var statusinfo = document.getElementById("statusinfo"+id);
+            var iaqarr = new Array();
+            var timearr = new Array();
+            var curmin = 500;
+            var myChart = echarts.init(document.getElementById("trashiaq"+id));
+            const data = { 'id': id };
+            fetch("getiaq.php", {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { 'content-type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                for (let i=data.length-1; i>=0; i--){
+                    curmin = Math.min(curmin,data[i]['iaq']);
+                    iaqarr.push(data[i]['iaq']);
+                    timearr.push(data[i]['time']);
+                }
+                if (((data[0]['iaq']-curmin)/curmin > 0.7 && data[0]['iaq']>150)  || data[0]['iaq']>=200){
+                    status.style.backgroundColor="red";
+                    statusinfo.innerHTML="Air quality bad!"
+                }
+                option = {    
+                xAxis: {   type: 'category',  data: timearr},    
+                yAxis: {   type: 'value'},  
+                series: [{  data: iaqarr,  type: 'line',  smooth: true, itemStyle : { normal: {label : {show: true}}}}]
+            };
+            
+                myChart.setOption(option);
+            })
+            .catch(err => console.error(err));
+
+        }
+        var sendDate = (new Date()).getTime();
+        function showbar(id){
+            var obj = document.getElementById("bar"+id);
+            var status = document.getElementById("lamp"+id);
+            var statusinfo = document.getElementById("statusinfo"+id);
+            const data = { 'id': id };
+            console.time("timer1");
+            fetch("getheight.php", {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { 'content-type': 'application/json' },
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.timeEnd("timer1");
+                height = data["height"];
+                if (height<=70){
+                obj.style.height= height*0.6+"%";
+                obj.style.backgroundColor= "#bb9319";
+                obj.innerHTML=height+"%";
+                }
+                if (height>70){
+                    obj.style.height= height*0.6+"%";
+                    obj.style.backgroundColor= "red";
+                    obj.innerHTML=height+"%";
+                    status.style.backgroundColor="red";
+                    statusinfo.innerHTML="The can is full!"
+                }
+            })
+            .catch(err => console.error(err));
+        }
+
+        document.getElementById("1").addEventListener("onload", showiaqchart("1"), false);
+        document.getElementById("2").addEventListener("onload", showiaqchart("2"), false);
+        document.getElementById("3").addEventListener("onload", showiaqchart("3"), false);
+        document.getElementById("4").addEventListener("onload", showiaqchart("4"), false);
+       
+
+        document.getElementById("1").addEventListener("onload", showbar("1"), false);
+        document.getElementById("2").addEventListener("onload", showbar("2"), false);
+        document.getElementById("3").addEventListener("onload", showbar("3"), false);
+        document.getElementById("4").addEventListener("onload", showbar("4"), false);
+
+        setTimeout(function(){location.reload()},3000);
+    </script>
+</body>
+</html>

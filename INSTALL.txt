@@ -1,0 +1,6 @@
+Install python version 3.6 or above on Raspberry Pi.
+
+Requires a power supply or battery to power the Raspberry Pi (>5V, >2A).
+
+a gas sensor (BME680) and a infraid sensor (HC-SR04).
+
